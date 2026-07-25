@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOS — Your AI Study Operating System</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<nav>
+    <div class="brand">🧠 StudyOS</div>
+    <div class="nav-links">
+        <a href="#" data-view="dashboard" class="nav-link active">Dashboard</a>
+        <a href="#" data-view="create" class="nav-link">New Topic</a>
+        <a href="#" data-view="library" class="nav-link">Library</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- DASHBOARD VIEW -->
+    <section id="view-dashboard" class="view active">
+        <h1>Today's Study Plan</h1>
+        <p class="subtitle">Your personalized review queue, powered by spaced repetition</p>
+
+        <div class="stat-grid">
+            <div class="stat-card"><div class="stat-label">Topics</div><div class="stat-value" id="stat-topics">0</div></div>
+            <div class="stat-card"><div class="stat-label">Total Questions</div><div class="stat-value" id="stat-total">0</div></div>
+            <div class="stat-card mastered"><div class="stat-label">Mastered</div><div class="stat-value" id="stat-mastered">0</div></div>
+            <div class="stat-card due"><div class="stat-label">Due Today</div><div class="stat-value" id="stat-due">0</div></div>
+        </div>
+
+        <div class="panel">
+            <h2>Review Queue</h2>
+            <div id="review-queue"></div>
+        </div>
+    </section>
+
+    <!-- CREATE VIEW -->
+    <section id="view-create" class="view">
+        <h1>Add Study Material</h1>
+        <p class="subtitle">Paste your notes, a textbook chapter, or any topic — AI will generate a quiz, flashcards, and a summary</p>
+
+        <div class="panel">
+            <div class="form-row">
+                <label>Topic Title</label>
+                <input type="text" id="input-title" placeholder="e.g. Photosynthesis, DBMS Normalization, WWII Causes">
+            </div>
+            <div class="form-row">
+                <label>Notes / Material</label>
+                <textarea id="input-source" rows="10" placeholder="Paste your notes here..."></textarea>
+            </div>
+            <button class="btn" id="btn-generate">✨ Generate Study Kit</button>
+            <div id="generate-status"></div>
+        </div>
+    </section>
+
+    <!-- LIBRARY VIEW -->
+    <section id="view-library" class="view">
+        <h1>Your Topics</h1>
+        <p class="subtitle">All generated study kits</p>
+        <div id="topic-list" class="topic-grid"></div>
+    </section>
+
+    <!-- TOPIC DETAIL VIEW -->
+    <section id="view-topic-detail" class="view">
+        <a href="#" id="back-to-library" class="back-link">&larr; Back to Library</a>
+        <h1 id="detail-title"></h1>
+        <div class="panel">
+            <h2>Summary</h2>
+            <p id="detail-summary"></p>
+        </div>
+
+        <div class="panel">
+            <h2>Quiz</h2>
+            <div id="quiz-container"></div>
+        </div>
+
+        <div class="panel">
+            <h2>Flashcards</h2>
+            <div id="flashcard-container" class="flashcard-grid"></div>
+        </div>
+    </section>
+
+</div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>
