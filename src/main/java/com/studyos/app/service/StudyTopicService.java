@@ -29,15 +29,11 @@ public class StudyTopicService {
     @Autowired
     private GeminiService geminiService;
 
-    /**
-     * Creates a new study topic: calls Gemini to generate a summary, quiz, and
-     * flashcards from the raw material, then persists everything.
-     */
-    public StudyTopic createTopicFromMaterial(String title, String sourceText) throws Exception {
+    public StudyTopic createTopicFromMaterial(String title, String sourceText, int questionCount) throws Exception {
         StudyTopic topic = new StudyTopic(title, sourceText);
         topic = topicRepository.save(topic);
 
-        GeneratedContent generated = geminiService.generateStudyMaterial(sourceText);
+        GeneratedContent generated = geminiService.generateStudyMaterial(sourceText, questionCount);
 
         topic.setSummary(generated.getSummary());
 
@@ -48,7 +44,8 @@ public class StudyTopicService {
             q.setOptionsRaw(String.join("||", gq.getOptions()));
             q.setCorrectAnswer(gq.getCorrectAnswer());
             q.setExplanation(gq.getExplanation());
-            q.setNextReviewDate(LocalDate.now()); // due immediately the first time
+            q.setDifficulty(gq.getDifficulty() != null ? gq.getDifficulty().toUpperCase() : "MEDIUM");
+            q.setNextReviewDate(LocalDate.now());
             questionRepository.save(q);
             topic.getQuestions().add(q);
         }
@@ -80,5 +77,32 @@ public class StudyTopicService {
 
     public List<QuizQuestion> getAllUnmasteredQuestions() {
         return questionRepository.findAllUnmastered();
+    }
+
+    public java.util.Map<String, Object> getAnalytics() {
+        List<QuizQuestion> all = questionRepository.findAll();
+
+        long totalAnswered = all.stream().mapToLong(QuizQuestion::getTimesAnswered).sum();
+        long totalCorrect = all.stream().mapToLong(QuizQuestion::getTimesCorrect).sum();
+        double accuracyRate = totalAnswered == 0 ? 0.0 : (100.0 * totalCorrect / totalAnswered);
+
+        java.util.Map<String, Long> byDifficulty = new java.util.HashMap<>();
+        for (String level : List.of("EASY", "MEDIUM", "HARD")) {
+            long count = all.stream()
+                    .filter(q -> level.equalsIgnoreCase(q.getDifficulty()))
+                    .count();
+            byDifficulty.put(level, count);
+        }
+
+        long masteredCount = all.stream().filter(QuizQuestion::isMasteredFlag).count();
+
+        return java.util.Map.of(
+                "accuracyRate", Math.round(accuracyRate * 10.0) / 10.0,
+                "totalAnswered", totalAnswered,
+                "totalCorrect", totalCorrect,
+                "byDifficulty", byDifficulty,
+                "masteredCount", masteredCount,
+                "totalQuestions", all.size()
+        );
     }
 }

@@ -27,6 +27,8 @@ public class QuizQuestion {
     @Column(length = 1000)
     private String explanation;
 
+    private String difficulty = "MEDIUM";
+
     private int correctStreak = 0;
     private int timesAnswered = 0;
     private int timesCorrect = 0;
@@ -52,6 +54,9 @@ public class QuizQuestion {
 
     public String getExplanation() { return explanation; }
     public void setExplanation(String explanation) { this.explanation = explanation; }
+
+    public String getDifficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
 
     public int getCorrectStreak() { return correctStreak; }
     public void setCorrectStreak(int correctStreak) { this.correctStreak = correctStreak; }

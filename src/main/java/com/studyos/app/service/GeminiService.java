@@ -33,7 +33,7 @@ public class GeminiService {
 
     private static final int MAX_SOURCE_CHARS = 6000;
 
-    public GeneratedContent generateStudyMaterial(String sourceText) throws Exception {
+    public GeneratedContent generateStudyMaterial(String sourceText, int questionCount) throws Exception {
         if (apiKey == null || apiKey.isBlank()) {
             throw new IllegalStateException(
                 "GROQ_API_KEY is not set. Set it as an environment variable before starting the app.");
@@ -43,15 +43,16 @@ public class GeminiService {
                 ? sourceText.substring(0, MAX_SOURCE_CHARS)
                 : sourceText;
 
-        String prompt = buildPrompt(trimmedSource);
-        String requestBody = buildRequestBody(prompt);
+        String prompt = buildPrompt(trimmedSource, questionCount);
+        int maxTokens = Math.min(8192, 2048 + (questionCount * 220));
+        String requestBody = buildRequestBody(prompt, maxTokens);
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(apiUrl))
                 .header("Content-Type", "application/json")
                 .header("Authorization", "Bearer " + apiKey)
                 .POST(HttpRequest.BodyPublishers.ofString(requestBody, StandardCharsets.UTF_8))
-                .timeout(Duration.ofSeconds(60))
+                .timeout(Duration.ofSeconds(90))
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -63,21 +64,15 @@ public class GeminiService {
         String rawText = extractTextFromGroqResponse(response.body());
         String cleanJson = stripMarkdownFences(rawText);
 
-        System.out.println("[GroqService] Response content length: " + rawText.length());
-        System.out.println("[GroqService] Last 200 chars: " +
-                cleanJson.substring(Math.max(0, cleanJson.length() - 200)));
-
-        try {
-            return mapper.readValue(cleanJson, GeneratedContent.class);
-        } catch (Exception e) {
-            System.out.println("[GroqService] JSON parse failed. Full response body length: " + response.body().length());
-            System.out.println("[GroqService] First 500 chars of raw body: " +
-                    response.body().substring(0, Math.min(500, response.body().length())));
-            throw e;
-        }
+        return mapper.readValue(cleanJson, GeneratedContent.class);
     }
 
-    private String buildPrompt(String sourceText) {
+    private String buildPrompt(String sourceText, int questionCount) {
+        int flashcardCount = Math.max(6, questionCount / 2);
+        int easyCount = questionCount / 3;
+        int hardCount = questionCount / 3;
+        int mediumCount = questionCount - easyCount - hardCount;
+
         return """
             You are an expert study assistant. Given the study material below, produce a JSON object
             (and ONLY a JSON object, no markdown fences, no extra commentary) with this exact structure:
@@ -89,7 +84,8 @@ public class GeminiService {
                   "question": "question text (max 25 words)",
                   "options": ["option A", "option B", "option C", "option D"],
                   "correctAnswer": "the exact text of the correct option",
-                  "explanation": "max 15 words explaining why this is correct"
+                  "explanation": "max 15 words explaining why this is correct",
+                  "difficulty": "EASY, MEDIUM, or HARD"
                 }
               ],
               "flashcards": [
@@ -97,20 +93,25 @@ public class GeminiService {
               ]
             }
 
-            Generate exactly 5 multiple-choice questions and exactly 6 flashcards, based strictly on
-            the material provided. Keep ALL text fields short and concise as instructed — brevity is critical.
+            Generate exactly %d multiple-choice questions and exactly %d flashcards, based strictly on
+            the material provided. Mix difficulty levels: roughly %d EASY (basic recall), %d MEDIUM
+            (application/understanding), and %d HARD (analysis/synthesis) questions, and set the
+            "difficulty" field accordingly for each question.
+
+            Keep ALL text fields short and concise as instructed — brevity is critical.
             Keep questions clear and unambiguous with exactly 4 options each.
+            Do not repeat questions or options. Cover different parts of the material, not just the beginning.
 
             STUDY MATERIAL:
             %s
-            """.formatted(sourceText);
+            """.formatted(questionCount, flashcardCount, easyCount, mediumCount, hardCount, sourceText);
     }
 
-    private String buildRequestBody(String prompt) throws Exception {
+    private String buildRequestBody(String prompt, int maxTokens) throws Exception {
         var root = mapper.createObjectNode();
         root.put("model", model);
         root.put("temperature", 0.4);
-        root.put("max_tokens", 4096);
+        root.put("max_tokens", maxTokens);
 
         var responseFormat = root.putObject("response_format");
         responseFormat.put("type", "json_object");
@@ -130,7 +131,7 @@ public class GeminiService {
         String finishReason = choice.path("finish_reason").asText("");
         if ("length".equals(finishReason)) {
             throw new RuntimeException(
-                "The AI response was cut off because it got too long. Try pasting shorter notes (a paragraph or two) and try again.");
+                "The AI response was cut off because it got too long. Try a lower question count or shorter notes.");
         }
 
         JsonNode textNode = choice.path("message").path("content");

@@ -31,6 +31,21 @@
             <div class="stat-card due"><div class="stat-label">Due Today</div><div class="stat-value" id="stat-due">0</div></div>
         </div>
 
+        <div class="panel" id="analytics-panel">
+            <h2>Performance Analytics</h2>
+            <div class="analytics-grid">
+                <div class="analytics-item">
+                    <div class="analytics-label">Accuracy Rate</div>
+                    <div class="analytics-value" id="analytics-accuracy">0%</div>
+                </div>
+                <div class="analytics-item">
+                    <div class="analytics-label">Questions Answered</div>
+                    <div class="analytics-value" id="analytics-answered">0</div>
+                </div>
+            </div>
+            <div class="difficulty-breakdown" id="difficulty-breakdown"></div>
+        </div>
+
         <div class="panel">
             <h2>Review Queue</h2>
             <div id="review-queue"></div>
@@ -40,17 +55,35 @@
     <!-- CREATE VIEW -->
     <section id="view-create" class="view">
         <h1>Add Study Material</h1>
-        <p class="subtitle">Paste your notes, a textbook chapter, or any topic — AI will generate a quiz, flashcards, and a summary</p>
+        <p class="subtitle">Paste your notes or upload a PDF — AI will generate a quiz, flashcards, and a summary</p>
 
         <div class="panel">
             <div class="form-row">
                 <label>Topic Title</label>
                 <input type="text" id="input-title" placeholder="e.g. Photosynthesis, DBMS Normalization, WWII Causes">
             </div>
+
+            <div class="form-row">
+                <label>Upload PDF (optional)</label>
+                <input type="file" id="input-pdf" accept="application/pdf">
+                <div id="pdf-status" style="margin-top:8px; font-size:13px;"></div>
+            </div>
+
             <div class="form-row">
                 <label>Notes / Material</label>
-                <textarea id="input-source" rows="10" placeholder="Paste your notes here..."></textarea>
+                <textarea id="input-source" rows="10" placeholder="Paste your notes here, or upload a PDF above to auto-fill this box..."></textarea>
             </div>
+
+            <div class="form-row">
+                <label>Number of Questions</label>
+                <select id="input-question-count">
+                    <option value="5">5 questions</option>
+                    <option value="10">10 questions</option>
+                    <option value="15">15 questions</option>
+                    <option value="20">20 questions</option>
+                </select>
+            </div>
+
             <button class="btn" id="btn-generate">✨ Generate Study Kit</button>
             <div id="generate-status"></div>
         </div>

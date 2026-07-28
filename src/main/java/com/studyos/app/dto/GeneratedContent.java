@@ -22,6 +22,7 @@ public class GeneratedContent {
         private List<String> options;
         private String correctAnswer;
         private String explanation;
+        private String difficulty;
 
         public String getQuestion() { return question; }
         public void setQuestion(String question) { this.question = question; }
@@ -31,6 +32,8 @@ public class GeneratedContent {
         public void setCorrectAnswer(String correctAnswer) { this.correctAnswer = correctAnswer; }
         public String getExplanation() { return explanation; }
         public void setExplanation(String explanation) { this.explanation = explanation; }
+        public String getDifficulty() { return difficulty; }
+        public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
     }
 
     public static class GeneratedFlashcard {

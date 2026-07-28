@@ -72,7 +72,7 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 
 .form-row { margin-bottom: 18px; }
 .form-row label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #cbd5e1; }
-.form-row input, .form-row textarea {
+.form-row input, .form-row textarea, .form-row select {
     width: 100%;
     padding: 12px 14px;
     background: #0f172a;
@@ -83,7 +83,16 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
     font-family: inherit;
     resize: vertical;
 }
-.form-row input:focus, .form-row textarea:focus { outline: none; border-color: #818cf8; }
+.form-row input:focus, .form-row textarea:focus, .form-row select:focus { outline: none; border-color: #818cf8; }
+
+.form-row input[type="file"] {
+    background: #0f172a;
+    border: 1px dashed #475569;
+    padding: 10px;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 13px;
+}
 
 .btn {
     background: linear-gradient(90deg, #6366f1, #a855f7);
@@ -165,3 +174,17 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge.due { background: #78350f; color: #fbbf24; }
+.badge.diff-easy { background: #14532d; color: #4ade80; }
+.badge.diff-medium { background: #78350f; color: #fbbf24; }
+.badge.diff-hard { background: #450a0a; color: #f87171; }
+
+.analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 18px; }
+.analytics-item { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 16px; }
+.analytics-label { font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+.analytics-value { font-size: 24px; font-weight: 800; margin-top: 6px; }
+
+.difficulty-breakdown { display: flex; gap: 10px; flex-wrap: wrap; }
+.diff-pill { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; }
+.diff-pill.easy { background: #14532d; color: #4ade80; }
+.diff-pill.medium { background: #78350f; color: #fbbf24; }
+.diff-pill.hard { background: #450a0a; color: #f87171; }

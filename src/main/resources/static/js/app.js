@@ -41,40 +41,106 @@ async function loadDashboard() {
         const queueEl = document.getElementById('review-queue');
         if (!data.dueToday || data.dueToday.length === 0) {
             queueEl.innerHTML = `<div class="empty-state">Nothing due today. Add a topic to get started, or come back tomorrow!</div>`;
-            return;
+        } else {
+            queueEl.innerHTML = '';
+            data.dueToday.forEach(q => {
+                queueEl.appendChild(renderQuestionCard(q));
+            });
         }
 
-        queueEl.innerHTML = '';
-        data.dueToday.forEach(q => {
-            queueEl.appendChild(renderQuestionCard(q));
-        });
+        loadAnalytics();
     } catch (err) {
         console.error(err);
     }
 }
 
+async function loadAnalytics() {
+    try {
+        const res = await fetch(`${API_BASE}/api/dashboard/analytics`);
+        const data = await res.json();
+
+        document.getElementById('analytics-accuracy').textContent = data.accuracyRate + '%';
+        document.getElementById('analytics-answered').textContent = data.totalAnswered;
+
+        const breakdownEl = document.getElementById('difficulty-breakdown');
+        const byDiff = data.byDifficulty || {};
+        breakdownEl.innerHTML = `
+            <span class="diff-pill easy">🟢 Easy: ${byDiff.EASY || 0}</span>
+            <span class="diff-pill medium">🟡 Medium: ${byDiff.MEDIUM || 0}</span>
+            <span class="diff-pill hard">🔴 Hard: ${byDiff.HARD || 0}</span>
+        `;
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// ---------- PDF Upload ----------
+document.getElementById('input-pdf').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    const statusEl = document.getElementById('pdf-status');
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = '❌ Please upload a PDF file.';
+        return;
+    }
+
+    statusEl.style.color = '#fbbf24';
+    statusEl.textContent = '📄 Extracting text from PDF...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch(`${API_BASE}/api/topics/extract-pdf`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            statusEl.style.color = '#f87171';
+            statusEl.textContent = '❌ ' + (data.error || 'Failed to read PDF.');
+            return;
+        }
+
+        document.getElementById('input-source').value = data.text;
+        statusEl.style.color = '#4ade80';
+        statusEl.textContent = `✅ Extracted ${data.text.length.toLocaleString()} characters. You can edit the text below before generating.`;
+
+        if (!document.getElementById('input-title').value.trim()) {
+            document.getElementById('input-title').value = file.name.replace(/\.pdf$/i, '');
+        }
+    } catch (err) {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = '❌ Network error: ' + err.message;
+    }
+});
+
 // ---------- Create Topic ----------
 document.getElementById('btn-generate').addEventListener('click', async () => {
     const title = document.getElementById('input-title').value.trim();
     const sourceText = document.getElementById('input-source').value.trim();
+    const questionCount = parseInt(document.getElementById('input-question-count').value, 10);
     const statusEl = document.getElementById('generate-status');
     const btn = document.getElementById('btn-generate');
 
     if (!sourceText) {
         statusEl.className = 'error';
-        statusEl.textContent = 'Please paste some study material first.';
+        statusEl.textContent = 'Please paste some study material or upload a PDF first.';
         return;
     }
 
     btn.disabled = true;
     statusEl.className = 'loading';
-    statusEl.textContent = '✨ Generating your study kit with AI... this can take 10-20 seconds.';
+    statusEl.textContent = `✨ Generating ${questionCount} questions with AI... this can take 15-30 seconds.`;
 
     try {
         const res = await fetch(`${API_BASE}/api/topics`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, sourceText })
+            body: JSON.stringify({ title, sourceText, questionCount })
         });
 
         const data = await res.json();
@@ -90,6 +156,8 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
         statusEl.textContent = '✅ Study kit generated! Opening it now...';
         document.getElementById('input-title').value = '';
         document.getElementById('input-source').value = '';
+        document.getElementById('input-pdf').value = '';
+        document.getElementById('pdf-status').textContent = '';
 
         setTimeout(() => {
             statusEl.textContent = '';
@@ -182,7 +250,13 @@ function renderQuestionCard(q) {
         dueBadge = `<span class="badge due">Review: ${q.nextReviewDate}</span>`;
     }
 
-    card.innerHTML = `<div class="q-text">${escapeHtml(q.questionText)} ${dueBadge}</div>`;
+    let diffBadge = '';
+    if (q.difficulty) {
+        const diffClass = 'diff-' + q.difficulty.toLowerCase();
+        diffBadge = `<span class="badge ${diffClass}">${q.difficulty}</span>`;
+    }
+
+    card.innerHTML = `<div class="q-text">${escapeHtml(q.questionText)} ${diffBadge} ${dueBadge}</div>`;
 
     const optionsWrap = document.createElement('div');
     options.forEach(opt => {
@@ -198,7 +272,6 @@ function renderQuestionCard(q) {
 }
 
 async function handleAnswerSubmit(questionId, selectedOption, card, optionsWrap) {
-    // Disable all options immediately to prevent double-submit
     optionsWrap.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
 
     try {

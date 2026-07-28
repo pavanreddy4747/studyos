@@ -40,4 +40,9 @@ public class DashboardController {
                 "totalTopics", totalTopics
         );
     }
+
+    @GetMapping("/analytics")
+    public Map<String, Object> analytics() {
+        return topicService.getAnalytics();
+    }
 }
