@@ -1,6 +1,5 @@
 const API_BASE = '';
 
-// ---------- Navigation ----------
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -27,7 +26,6 @@ function showView(viewName) {
     if (viewName === 'library') loadLibrary();
 }
 
-// ---------- Dashboard ----------
 async function loadDashboard() {
     try {
         const res = await fetch(`${API_BASE}/api/dashboard/today`);
@@ -74,7 +72,6 @@ async function loadAnalytics() {
     }
 }
 
-// ---------- PDF Upload ----------
 document.getElementById('input-pdf').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     const statusEl = document.getElementById('pdf-status');
@@ -118,7 +115,6 @@ document.getElementById('input-pdf').addEventListener('change', async (e) => {
     }
 });
 
-// ---------- Create Topic ----------
 document.getElementById('btn-generate').addEventListener('click', async () => {
     const title = document.getElementById('input-title').value.trim();
     const sourceText = document.getElementById('input-source').value.trim();
@@ -134,7 +130,7 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
 
     btn.disabled = true;
     statusEl.className = 'loading';
-    statusEl.textContent = `✨ Generating ${questionCount} questions with AI... this can take 15-30 seconds.`;
+    statusEl.textContent = `✨ Generating ${questionCount} questions with AI... for longer documents this can take 1-2 minutes as we process the full text in sections.`;
 
     try {
         const res = await fetch(`${API_BASE}/api/topics`, {
@@ -171,7 +167,6 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
     }
 });
 
-// ---------- Library ----------
 async function loadLibrary() {
     const listEl = document.getElementById('topic-list');
     listEl.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -202,7 +197,6 @@ async function loadLibrary() {
     }
 }
 
-// ---------- Topic Detail ----------
 async function openTopicDetail(topicId) {
     showView('topic-detail');
     document.getElementById('detail-title').textContent = 'Loading...';
@@ -238,7 +232,6 @@ async function openTopicDetail(topicId) {
     }
 }
 
-// ---------- Shared: Render a quiz question card ----------
 function renderQuestionCard(q) {
     const card = document.createElement('div');
     card.className = 'question-card';
@@ -308,5 +301,4 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// ---------- Init ----------
 loadDashboard();

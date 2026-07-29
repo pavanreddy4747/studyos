@@ -15,11 +15,12 @@ public class StudyTopic {
 
     private String title;
 
-    @Column(length = 20000)
-    private String sourceText; // the notes/material the user pasted in
+    @Lob
+    @Column(columnDefinition = "CLOB")
+    private String sourceText;
 
     @Column(length = 3000)
-    private String summary; // AI-generated summary
+    private String summary;
 
     private LocalDateTime createdAt;
 
