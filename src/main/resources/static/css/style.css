@@ -188,3 +188,24 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 .diff-pill.easy { background: #14532d; color: #4ade80; }
 .diff-pill.medium { background: #78350f; color: #fbbf24; }
 .diff-pill.hard { background: #450a0a; color: #f87171; }
+
+.chat-input-row { display: flex; gap: 10px; margin-top: 12px; }
+.chat-input-row input {
+    flex: 1;
+    padding: 12px 14px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-size: 14px;
+}
+.chat-input-row input:focus { outline: none; border-color: #818cf8; }
+
+#chat-messages { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; margin-bottom: 4px; }
+#chat-messages:empty { display: none; }
+
+.chat-msg { padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.5; max-width: 85%; }
+.chat-msg.user { background: #4c1d95; align-self: flex-end; }
+.chat-msg.tutor { background: #1e293b; border: 1px solid #334155; align-self: flex-start; }
+.chat-msg.loading { color: #94a3b8; font-style: italic; }
+.chat-msg.error { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }

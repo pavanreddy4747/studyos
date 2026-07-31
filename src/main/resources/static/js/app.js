@@ -1,4 +1,5 @@
 const API_BASE = '';
+let currentTopicId = null;
 
 document.querySelectorAll('.nav-link').forEach(link => {
     link.addEventListener('click', (e) => {
@@ -199,10 +200,13 @@ async function loadLibrary() {
 
 async function openTopicDetail(topicId) {
     showView('topic-detail');
+    currentTopicId = topicId;
     document.getElementById('detail-title').textContent = 'Loading...';
     document.getElementById('detail-summary').textContent = '';
     document.getElementById('quiz-container').innerHTML = '';
     document.getElementById('flashcard-container').innerHTML = '';
+    document.getElementById('chat-messages').innerHTML = '';
+    document.getElementById('chat-input').value = '';
 
     try {
         const res = await fetch(`${API_BASE}/api/topics/${topicId}`);
@@ -299,6 +303,60 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+document.getElementById('btn-chat-send').addEventListener('click', sendChatMessage);
+document.getElementById('chat-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendChatMessage();
+});
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const question = input.value.trim();
+    if (!question || !currentTopicId) return;
+
+    const messagesEl = document.getElementById('chat-messages');
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'chat-msg user';
+    userMsg.textContent = question;
+    messagesEl.appendChild(userMsg);
+
+    input.value = '';
+
+    const loadingMsg = document.createElement('div');
+    loadingMsg.className = 'chat-msg tutor loading';
+    loadingMsg.textContent = 'Thinking...';
+    messagesEl.appendChild(loadingMsg);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    try {
+        const res = await fetch(`${API_BASE}/api/chat/ask`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ topicId: currentTopicId, question })
+        });
+        const data = await res.json();
+
+        loadingMsg.remove();
+
+        const replyMsg = document.createElement('div');
+        if (!res.ok) {
+            replyMsg.className = 'chat-msg error';
+            replyMsg.textContent = data.error || 'Something went wrong.';
+        } else {
+            replyMsg.className = 'chat-msg tutor';
+            replyMsg.textContent = data.answer;
+        }
+        messagesEl.appendChild(replyMsg);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    } catch (err) {
+        loadingMsg.remove();
+        const errMsg = document.createElement('div');
+        errMsg.className = 'chat-msg error';
+        errMsg.textContent = 'Network error: ' + err.message;
+        messagesEl.appendChild(errMsg);
+    }
 }
 
 loadDashboard();
