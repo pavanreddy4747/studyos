@@ -419,6 +419,7 @@ async function sendChatMessage() {
         } else {
             replyMsg.className = 'chat-msg tutor';
             replyMsg.textContent = data.answer;
+            speakText(data.answer);
         }
         messagesEl.appendChild(replyMsg);
         messagesEl.scrollTop = messagesEl.scrollHeight;
@@ -429,6 +430,68 @@ async function sendChatMessage() {
         errMsg.textContent = 'Network error: ' + err.message;
         messagesEl.appendChild(errMsg);
     }
+}
+
+// ---------- Voice: Speech-to-Text (ask by voice) ----------
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isRecording = false;
+
+if (SpeechRecognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('chat-input').value = transcript;
+        document.getElementById('mic-status').textContent = '';
+    };
+
+    recognition.onerror = (event) => {
+        document.getElementById('mic-status').textContent = '❌ Could not hear you — try again.';
+        stopRecordingUI();
+    };
+
+    recognition.onend = () => {
+        stopRecordingUI();
+    };
+} else {
+    document.getElementById('btn-mic').style.display = 'none';
+}
+
+function stopRecordingUI() {
+    isRecording = false;
+    document.getElementById('btn-mic').classList.remove('recording');
+}
+
+document.getElementById('btn-mic').addEventListener('click', () => {
+    if (!recognition) return;
+
+    if (isRecording) {
+        recognition.stop();
+        stopRecordingUI();
+        return;
+    }
+
+    isRecording = true;
+    document.getElementById('btn-mic').classList.add('recording');
+    document.getElementById('mic-status').textContent = '🎙️ Listening...';
+    recognition.start();
+});
+
+// ---------- Voice: Text-to-Speech (tutor reads replies aloud) ----------
+function speakText(text) {
+    const toggle = document.getElementById('voice-reply-toggle');
+    if (!toggle.checked) return;
+    if (!('speechSynthesis' in window)) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
 }
 
 // ---------- Init ----------

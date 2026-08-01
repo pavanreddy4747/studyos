@@ -25,7 +25,6 @@
 
 <div class="container">
 
-    <!-- DASHBOARD VIEW -->
     <section id="view-dashboard" class="view active">
         <h1>Today's Study Plan</h1>
         <p class="subtitle">Your personalized review queue, powered by spaced repetition</p>
@@ -60,7 +59,6 @@
         </div>
     </section>
 
-    <!-- CREATE VIEW -->
     <section id="view-create" class="view">
         <h1>Add Study Material</h1>
         <p class="subtitle">Paste your notes or upload a PDF — AI will generate a quiz, flashcards, and a summary</p>
@@ -97,14 +95,12 @@
         </div>
     </section>
 
-    <!-- LIBRARY VIEW -->
     <section id="view-library" class="view">
         <h1>Your Topics</h1>
         <p class="subtitle">All generated study kits</p>
         <div id="topic-list" class="topic-grid"></div>
     </section>
 
-    <!-- TOPIC DETAIL VIEW -->
     <section id="view-topic-detail" class="view">
         <a href="#" id="back-to-library" class="back-link">&larr; Back to Library</a>
         <h1 id="detail-title"></h1>
@@ -125,11 +121,19 @@
 
         <div class="panel">
             <h2>💬 Ask the AI Tutor</h2>
-            <p class="subtitle" style="margin-bottom:14px;">Ask any question about this topic and get an instant explanation</p>
+            <p class="subtitle" style="margin-bottom:14px;">Ask any question about this topic — by typing or speaking — and get an instant explanation, read aloud</p>
             <div id="chat-messages"></div>
             <div class="chat-input-row">
                 <input type="text" id="chat-input" placeholder="e.g. Can you explain this in simpler terms?">
+                <button class="btn secondary" id="btn-mic" title="Ask by voice">🎤</button>
                 <button class="btn" id="btn-chat-send">Ask</button>
+            </div>
+            <div class="chat-options-row">
+                <label class="voice-toggle">
+                    <input type="checkbox" id="voice-reply-toggle">
+                    🔊 Read tutor replies aloud
+                </label>
+                <span id="mic-status"></span>
             </div>
         </div>
     </section>
