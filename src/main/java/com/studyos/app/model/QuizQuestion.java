@@ -20,15 +20,17 @@ public class QuizQuestion {
     @Column(length = 1000)
     private String questionText;
 
+    // Options stored as a delimited string "A) ...||B) ...||C) ...||D) ..."
     @Column(length = 2000)
     private String optionsRaw;
 
-    private String correctAnswer;
+    private String correctAnswer; // e.g. "B" or the correct option text
     @Column(length = 1000)
     private String explanation;
 
-    private String difficulty = "MEDIUM";
+    private String difficulty = "MEDIUM"; // EASY, MEDIUM, HARD
 
+    // ---- Spaced repetition tracking ----
     private int correctStreak = 0;
     private int timesAnswered = 0;
     private int timesCorrect = 0;

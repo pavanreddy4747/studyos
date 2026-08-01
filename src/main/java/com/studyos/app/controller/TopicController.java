@@ -2,11 +2,14 @@ package com.studyos.app.controller;
 
 import com.studyos.app.dto.CreateTopicRequest;
 import com.studyos.app.model.StudyTopic;
+import com.studyos.app.model.User;
+import com.studyos.app.service.CurrentUserService;
 import com.studyos.app.service.PdfExtractionService;
 import com.studyos.app.service.StudyTopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,20 +30,27 @@ public class TopicController {
     @Autowired
     private PdfExtractionService pdfExtractionService;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     @GetMapping
-    public List<StudyTopic> getAllTopics() {
-        return topicService.getAllTopics();
+    public List<StudyTopic> getAllTopics(Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+        return topicService.getTopicsForOwner(user.getId());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StudyTopic> getTopic(@PathVariable Long id) {
-        return topicService.getTopicById(id)
+    public ResponseEntity<StudyTopic> getTopic(@PathVariable Long id, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+        return topicService.getTopicByIdForOwner(id, user.getId())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    public ResponseEntity<?> createTopic(@RequestBody CreateTopicRequest request) {
+    public ResponseEntity<?> createTopic(@RequestBody CreateTopicRequest request, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+
         if (request.getSourceText() == null || request.getSourceText().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "sourceText is required"));
         }
@@ -53,7 +63,7 @@ public class TopicController {
         try {
             String title = (request.getTitle() == null || request.getTitle().isBlank())
                     ? "Untitled Topic" : request.getTitle();
-            StudyTopic topic = topicService.createTopicFromMaterial(title, request.getSourceText(), questionCount);
+            StudyTopic topic = topicService.createTopicFromMaterial(user, title, request.getSourceText(), questionCount);
             return ResponseEntity.status(HttpStatus.CREATED).body(topic);
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of("error", e.getMessage()));
@@ -83,8 +93,9 @@ public class TopicController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTopic(@PathVariable Long id) {
-        topicService.deleteTopic(id);
+    public ResponseEntity<Void> deleteTopic(@PathVariable Long id, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+        topicService.deleteTopicForOwner(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

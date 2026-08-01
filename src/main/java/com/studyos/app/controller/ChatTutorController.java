@@ -2,11 +2,14 @@ package com.studyos.app.controller;
 
 import com.studyos.app.dto.ChatTutorRequest;
 import com.studyos.app.model.StudyTopic;
+import com.studyos.app.model.User;
 import com.studyos.app.service.ChatTutorService;
+import com.studyos.app.service.CurrentUserService;
 import com.studyos.app.service.StudyTopicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -23,8 +26,13 @@ public class ChatTutorController {
     @Autowired
     private StudyTopicService topicService;
 
+    @Autowired
+    private CurrentUserService currentUserService;
+
     @PostMapping("/ask")
-    public ResponseEntity<?> ask(@RequestBody ChatTutorRequest request) {
+    public ResponseEntity<?> ask(@RequestBody ChatTutorRequest request, Authentication authentication) {
+        User user = currentUserService.getCurrentUser(authentication);
+
         if (request.getTopicId() == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "topicId is required"));
         }
@@ -32,7 +40,7 @@ public class ChatTutorController {
             return ResponseEntity.badRequest().body(Map.of("error", "question is required"));
         }
 
-        Optional<StudyTopic> topicOpt = topicService.getTopicById(request.getTopicId());
+        Optional<StudyTopic> topicOpt = topicService.getTopicByIdForOwner(request.getTopicId(), user.getId());
         if (topicOpt.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Topic not found"));
         }

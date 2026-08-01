@@ -1,0 +1,105 @@
+.landing-body { background: #0f172a; }
+
+.landing-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.landing-nav-links { display: flex; align-items: center; gap: 20px; }
+.landing-nav-links a { color: #cbd5e1; text-decoration: none; font-weight: 600; font-size: 14px; }
+.landing-nav-links a:hover { color: #fff; }
+
+.hero {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 90px 24px 70px;
+}
+
+.hero h1 {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    background: linear-gradient(90deg, #e2e8f0, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 17px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+
+.hero-cta .btn { font-size: 16px; padding: 14px 36px; }
+
+.features {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 24px 100px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.feature-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 14px;
+    padding: 28px 22px;
+    text-align: center;
+}
+
+.feature-icon { font-size: 32px; margin-bottom: 12px; }
+.feature-card h3 { font-size: 16px; margin-bottom: 8px; color: #e2e8f0; }
+.feature-card p { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+
+/* Auth Modal */
+.auth-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+}
+.auth-modal-overlay.active { display: flex; }
+
+.auth-modal {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 36px;
+    width: 100%;
+    max-width: 400px;
+    position: relative;
+}
+
+.auth-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 24px;
+    cursor: pointer;
+}
+.auth-modal-close:hover { color: #fff; }
+
+.auth-modal h2 { margin-bottom: 20px; font-size: 22px; }
+
+.auth-tab { display: none; }
+.auth-tab.active { display: block; }
+
+.auth-error { color: #f87171; font-size: 13px; margin-bottom: 14px; min-height: 16px; }
+
+.auth-switch { text-align: center; margin-top: 16px; font-size: 13px; color: #94a3b8; }
+.auth-switch a { color: #a78bfa; text-decoration: none; font-weight: 600; }

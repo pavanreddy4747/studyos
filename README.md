@@ -3,7 +3,7 @@
 Paste your notes → AI generates a quiz + flashcards + summary → the app tracks what you get wrong and schedules smart review reminders using spaced repetition, so you always know exactly what to study today.
 
 ## Features
-- **AI Content Generation** — Google Gemini turns raw notes into a 5-question quiz, 6 flashcards, and a summary
+- **AI Content Generation** — Groq (Llama 3.3 70B, free tier) turns raw notes into a 5-question quiz, 6 flashcards, and a summary
 - **Spaced Repetition Engine** — wrong answers get rescheduled sooner; correct streaks push reviews further out (Anki-style algorithm); 5 correct in a row = "Mastered"
 - **Today's Study Plan Dashboard** — shows exactly what's due for review right now
 - **Topic Library** — all your generated study kits in one place
@@ -11,7 +11,7 @@ Paste your notes → AI generates a quiz + flashcards + summary → the app trac
 
 ## Tech Stack
 - Backend: Java 17+, Spring Boot 3.2.5, Spring Data JPA, H2 (file-based DB)
-- AI: Google Gemini API (`gemini-2.0-flash`, free tier)
+- AI: Groq API (`llama-3.3-70b-versatile`, free tier, OpenAI-compatible)
 - Frontend: Vanilla HTML/CSS/JS (no build step, single page app)
 
 ---
@@ -21,19 +21,14 @@ Paste your notes → AI generates a quiz + flashcards + summary → the app trac
 ### Prerequisites
 - Java 17+ (you have Java 21 — that's fine)
 - Maven (already working on your machine)
-- A free Gemini API key: https://aistudio.google.com/apikey
+- A free Groq API key: https://console.groq.com/keys
 
-### Step 1: Set your Gemini API key
+### Step 1: Set your Groq API key
 The app reads the key from an environment variable — **never hardcode it in code or commit it to GitHub.**
 
-**Windows PowerShell (for current session only):**
-```powershell
-$env:GEMINI_API_KEY="your-key-here"
+**Windows Command Prompt (permanently, so you don't retype it every time):**
 ```
-
-**Windows PowerShell (permanently, so you don't retype it every time):**
-```powershell
-setx GEMINI_API_KEY "your-key-here"
+setx GROQ_API_KEY "your-key-here"
 ```
 Close and reopen your terminal after using `setx`.
 
@@ -75,8 +70,8 @@ Wait for `Started StudyOsApplication`, then open **http://localhost:8080**
    - **Build Command:** `./mvnw clean install` (or `mvn clean install` if no wrapper)
    - **Start Command:** `java -jar target/studyos-1.0.0.jar`
 5. Under **Environment Variables**, add:
-   - Key: `GEMINI_API_KEY`
-   - Value: your actual Gemini key
+   - Key: `GROQ_API_KEY`
+   - Value: your actual Groq key
 6. Click **Create Web Service** — first deploy takes a few minutes
 7. Render gives you a live URL like `https://studyos-xyz.onrender.com` — this is what you share with judges
 

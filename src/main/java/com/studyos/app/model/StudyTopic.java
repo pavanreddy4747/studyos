@@ -1,5 +1,6 @@
 package com.studyos.app.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -13,14 +14,19 @@ public class StudyTopic {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    private User owner;
+
     private String title;
 
     @Lob
     @Column(columnDefinition = "CLOB")
-    private String sourceText;
+    private String sourceText; // the notes/material the user pasted in
 
     @Column(length = 3000)
-    private String summary;
+    private String summary; // AI-generated summary
 
     private LocalDateTime createdAt;
 
@@ -40,6 +46,9 @@ public class StudyTopic {
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
+
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

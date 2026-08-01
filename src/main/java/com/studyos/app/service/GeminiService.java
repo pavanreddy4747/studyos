@@ -32,6 +32,14 @@ public class GeminiService {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Sends the study material to Groq's chat completions API and asks for a
+     * structured JSON response containing a summary, quiz questions, and flashcards.
+     * For long documents, splits into chunks, calls the AI per chunk, and merges results.
+     *
+     * @param sourceText    the study material (can be very long — will be chunked)
+     * @param questionCount total quiz questions to generate across the whole document (5, 10, 15, or 20)
+     */
     private static final int CHUNK_SIZE_CHARS = 4000;
 
     public GeneratedContent generateStudyMaterial(String sourceText, int questionCount) throws Exception {
@@ -41,16 +49,19 @@ public class GeminiService {
         }
 
         List<String> chunks = splitIntoChunks(sourceText, CHUNK_SIZE_CHARS);
+
+        // Distribute questions across chunks as evenly as possible (min 2 per chunk if multiple chunks)
         List<Integer> questionsPerChunk = distributeQuestions(questionCount, chunks.size());
 
         List<GeneratedContent> partialResults = new java.util.ArrayList<>();
         for (int i = 0; i < chunks.size(); i++) {
             int qCount = questionsPerChunk.get(i);
-            if (qCount == 0) continue;
+            if (qCount == 0) continue; // skip chunks that got no questions (shouldn't normally happen)
 
             GeneratedContent partial = generateFromSingleChunkWithRetry(chunks.get(i), qCount);
             partialResults.add(partial);
 
+            // Small pause between chunk calls to stay under Groq's free-tier tokens-per-minute limit
             if (i < chunks.size() - 1) {
                 Thread.sleep(3000);
             }
@@ -59,6 +70,10 @@ public class GeminiService {
         return mergeResults(partialResults);
     }
 
+    /**
+     * Calls the AI for a single chunk, automatically retrying with backoff if
+     * Groq's free-tier rate limit is hit (HTTP 429).
+     */
     private GeneratedContent generateFromSingleChunkWithRetry(String chunkText, int questionCount) throws Exception {
         int maxRetries = 3;
         int attempt = 0;
@@ -77,6 +92,10 @@ public class GeminiService {
         }
     }
 
+    /**
+     * Splits text into chunks of roughly maxChunkSize characters, breaking at paragraph
+     * boundaries where possible to avoid cutting sentences mid-way.
+     */
     private List<String> splitIntoChunks(String text, int maxChunkSize) {
         List<String> chunks = new java.util.ArrayList<>();
         if (text.length() <= maxChunkSize) {
@@ -92,6 +111,7 @@ public class GeminiService {
                 chunks.add(current.toString());
                 current = new StringBuilder();
             }
+            // If a single paragraph itself exceeds the chunk size, hard-split it
             if (para.length() > maxChunkSize) {
                 for (int i = 0; i < para.length(); i += maxChunkSize) {
                     chunks.add(para.substring(i, Math.min(i + maxChunkSize, para.length())));
@@ -105,6 +125,7 @@ public class GeminiService {
             chunks.add(current.toString());
         }
 
+        // Safety cap: don't allow runaway chunk counts (very long docs) — cap at 10 chunks
         if (chunks.size() > 10) {
             List<String> merged = new java.util.ArrayList<>();
             int groupSize = (int) Math.ceil(chunks.size() / 10.0);
@@ -133,6 +154,9 @@ public class GeminiService {
         return result;
     }
 
+    /**
+     * Thrown when Groq returns a 429 rate-limit response; carries how long to wait before retrying.
+     */
     private static class RateLimitException extends RuntimeException {
         final long retryAfterMillis;
         RateLimitException(long retryAfterMillis) {
@@ -171,19 +195,28 @@ public class GeminiService {
         return mapper.readValue(cleanJson, GeneratedContent.class);
     }
 
+    /**
+     * Groq's 429 error message includes a hint like "Please try again in 7.995s".
+     * Parses that out; falls back to a safe default if the format isn't found.
+     */
     private long parseRetryAfterMillis(String errorBody) {
         try {
             java.util.regex.Matcher matcher =
                 java.util.regex.Pattern.compile("try again in ([0-9.]+)s").matcher(errorBody);
             if (matcher.find()) {
                 double seconds = Double.parseDouble(matcher.group(1));
-                return (long) (seconds * 1000) + 500;
+                return (long) (seconds * 1000) + 500; // small buffer on top
             }
         } catch (Exception ignored) {
+            // fall through to default
         }
-        return 10000;
+        return 10000; // default 10s wait if we couldn't parse the message
     }
 
+    /**
+     * Merges partial results from multiple chunks into a single combined result:
+     * summaries are joined, questions and flashcards are concatenated.
+     */
     private GeneratedContent mergeResults(List<GeneratedContent> partials) {
         GeneratedContent merged = new GeneratedContent();
 
@@ -208,6 +241,7 @@ public class GeminiService {
 
     private String buildPrompt(String sourceText, int questionCount) {
         int flashcardCount = Math.max(6, questionCount / 2);
+        // Roughly even split across difficulty levels
         int easyCount = questionCount / 3;
         int hardCount = questionCount / 3;
         int mediumCount = questionCount - easyCount - hardCount;
@@ -270,7 +304,7 @@ public class GeminiService {
         String finishReason = choice.path("finish_reason").asText("");
         if ("length".equals(finishReason)) {
             throw new RuntimeException(
-                "The AI response was cut off because it got too long. Try a lower question count.");
+                "The AI response was cut off because it got too long. Try pasting shorter notes (a paragraph or two) and try again.");
         }
 
         JsonNode textNode = choice.path("message").path("content");

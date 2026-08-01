@@ -12,9 +12,12 @@ public interface QuizQuestionRepository extends JpaRepository<QuizQuestion, Long
 
     List<QuizQuestion> findByTopicId(Long topicId);
 
-    @Query("SELECT q FROM QuizQuestion q WHERE q.nextReviewDate <= :today AND q.masteredFlag = false")
-    List<QuizQuestion> findDueForReview(@Param("today") LocalDate today);
+    @Query("SELECT q FROM QuizQuestion q WHERE q.nextReviewDate <= :today AND q.masteredFlag = false AND q.topic.owner.id = :ownerId")
+    List<QuizQuestion> findDueForReviewByOwner(@Param("today") LocalDate today, @Param("ownerId") Long ownerId);
 
-    @Query("SELECT q FROM QuizQuestion q WHERE q.masteredFlag = false")
-    List<QuizQuestion> findAllUnmastered();
+    @Query("SELECT q FROM QuizQuestion q WHERE q.masteredFlag = false AND q.topic.owner.id = :ownerId")
+    List<QuizQuestion> findAllUnmasteredByOwner(@Param("ownerId") Long ownerId);
+
+    @Query("SELECT q FROM QuizQuestion q WHERE q.topic.owner.id = :ownerId")
+    List<QuizQuestion> findAllByOwner(@Param("ownerId") Long ownerId);
 }

@@ -33,6 +33,12 @@ nav {
 .nav-link:hover { color: #e2e8f0; }
 .nav-link.active { color: #a78bfa; border-bottom-color: #a78bfa; }
 
+.nav-right { display: flex; align-items: center; gap: 16px; margin-left: 16px; padding-left: 16px; border-left: 1px solid #334155; }
+.streak-badge { font-size: 14px; font-weight: 700; color: #fbbf24; }
+.user-name { font-size: 13px; color: #94a3b8; font-weight: 600; }
+
+.chart-wrap { max-width: 320px; margin: 0 auto; }
+
 .container { max-width: 1000px; margin: 0 auto; padding: 32px 20px 80px; }
 
 .view { display: none; }
@@ -72,7 +78,7 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 
 .form-row { margin-bottom: 18px; }
 .form-row label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; color: #cbd5e1; }
-.form-row input, .form-row textarea, .form-row select {
+.form-row input, .form-row textarea {
     width: 100%;
     padding: 12px 14px;
     background: #0f172a;
@@ -83,16 +89,7 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
     font-family: inherit;
     resize: vertical;
 }
-.form-row input:focus, .form-row textarea:focus, .form-row select:focus { outline: none; border-color: #818cf8; }
-
-.form-row input[type="file"] {
-    background: #0f172a;
-    border: 1px dashed #475569;
-    padding: 10px;
-    border-radius: 8px;
-    color: #94a3b8;
-    font-size: 13px;
-}
+.form-row input:focus, .form-row textarea:focus { outline: none; border-color: #818cf8; }
 
 .btn {
     background: linear-gradient(90deg, #6366f1, #a855f7);
@@ -174,6 +171,7 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 
 .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .badge.due { background: #78350f; color: #fbbf24; }
+
 .badge.diff-easy { background: #14532d; color: #4ade80; }
 .badge.diff-medium { background: #78350f; color: #fbbf24; }
 .badge.diff-hard { background: #450a0a; color: #f87171; }
@@ -201,7 +199,7 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 }
 .chat-input-row input:focus { outline: none; border-color: #818cf8; }
 
-#chat-messages { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; margin-bottom: 4px; }
+#chat-messages { display: flex; flex-direction: column; gap: 12px; max-height: 400px; overflow-y: auto; }
 #chat-messages:empty { display: none; }
 
 .chat-msg { padding: 12px 16px; border-radius: 10px; font-size: 14px; line-height: 1.5; max-width: 85%; }
@@ -209,3 +207,12 @@ h2 { font-size: 18px; font-weight: 700; margin-bottom: 14px; color: #cbd5e1; }
 .chat-msg.tutor { background: #1e293b; border: 1px solid #334155; align-self: flex-start; }
 .chat-msg.loading { color: #94a3b8; font-style: italic; }
 .chat-msg.error { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }
+
+.form-row input[type="file"] {
+    background: #0f172a;
+    border: 1px dashed #475569;
+    padding: 10px;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 13px;
+}

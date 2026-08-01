@@ -9,6 +9,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class PdfExtractionService {
 
+    /**
+     * Extracts plain text from an uploaded PDF file.
+     */
     public String extractText(MultipartFile file) throws Exception {
         try (PDDocument document = Loader.loadPDF(file.getBytes())) {
             if (document.isEncrypted()) {

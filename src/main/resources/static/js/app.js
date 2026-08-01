@@ -1,7 +1,38 @@
 const API_BASE = '';
 let currentTopicId = null;
+let difficultyChart = null;
 
-document.querySelectorAll('.nav-link').forEach(link => {
+// ---------- Auth Check ----------
+(async function checkAuth() {
+    try {
+        const res = await fetch(`${API_BASE}/api/auth/me`);
+        if (!res.ok) {
+            window.location.href = '/landing.html';
+            return;
+        }
+        const user = await res.json();
+        document.getElementById('user-name').textContent = user.displayName || user.email;
+        if (user.currentStreak > 0) {
+            document.getElementById('streak-badge').style.display = 'inline';
+            document.getElementById('streak-count').textContent = user.currentStreak;
+        }
+    } catch (err) {
+        window.location.href = '/landing.html';
+    }
+})();
+
+document.getElementById('btn-logout').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+        await fetch(`${API_BASE}/api/auth/logout`, { method: 'POST' });
+    } catch (err) {
+        console.error(err);
+    }
+    window.location.href = '/landing.html';
+});
+
+// ---------- Navigation ----------
+document.querySelectorAll('.nav-link[data-view]').forEach(link => {
     link.addEventListener('click', (e) => {
         e.preventDefault();
         showView(link.dataset.view);
@@ -15,7 +46,7 @@ document.getElementById('back-to-library').addEventListener('click', (e) => {
 
 function showView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    document.querySelectorAll('.nav-link[data-view]').forEach(l => l.classList.remove('active'));
 
     const view = document.getElementById('view-' + viewName);
     if (view) view.classList.add('active');
@@ -27,6 +58,7 @@ function showView(viewName) {
     if (viewName === 'library') loadLibrary();
 }
 
+// ---------- Dashboard ----------
 async function loadDashboard() {
     try {
         const res = await fetch(`${API_BASE}/api/dashboard/today`);
@@ -36,6 +68,11 @@ async function loadDashboard() {
         document.getElementById('stat-total').textContent = data.totalQuestions;
         document.getElementById('stat-mastered').textContent = data.masteredCount;
         document.getElementById('stat-due').textContent = data.dueTodayCount;
+
+        if (data.currentStreak > 0) {
+            document.getElementById('streak-badge').style.display = 'inline';
+            document.getElementById('streak-count').textContent = data.currentStreak;
+        }
 
         const queueEl = document.getElementById('review-queue');
         if (!data.dueToday || data.dueToday.length === 0) {
@@ -61,18 +98,48 @@ async function loadAnalytics() {
         document.getElementById('analytics-accuracy').textContent = data.accuracyRate + '%';
         document.getElementById('analytics-answered').textContent = data.totalAnswered;
 
-        const breakdownEl = document.getElementById('difficulty-breakdown');
-        const byDiff = data.byDifficulty || {};
-        breakdownEl.innerHTML = `
-            <span class="diff-pill easy">🟢 Easy: ${byDiff.EASY || 0}</span>
-            <span class="diff-pill medium">🟡 Medium: ${byDiff.MEDIUM || 0}</span>
-            <span class="diff-pill hard">🔴 Hard: ${byDiff.HARD || 0}</span>
-        `;
+        renderDifficultyChart(data.byDifficulty || {});
     } catch (err) {
         console.error(err);
     }
 }
 
+function renderDifficultyChart(byDiff) {
+    const ctx = document.getElementById('difficulty-chart');
+    if (!ctx) return;
+
+    const easy = byDiff.EASY || 0;
+    const medium = byDiff.MEDIUM || 0;
+    const hard = byDiff.HARD || 0;
+
+    if (difficultyChart) {
+        difficultyChart.data.datasets[0].data = [easy, medium, hard];
+        difficultyChart.update();
+        return;
+    }
+
+    difficultyChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Easy', 'Medium', 'Hard'],
+            datasets: [{
+                data: [easy, medium, hard],
+                backgroundColor: ['#4ade80', '#fbbf24', '#f87171'],
+                borderColor: '#1e293b',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: { color: '#e2e8f0', font: { size: 12 } }
+                }
+            }
+        }
+    });
+}
+
+// ---------- PDF Upload ----------
 document.getElementById('input-pdf').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     const statusEl = document.getElementById('pdf-status');
@@ -116,6 +183,7 @@ document.getElementById('input-pdf').addEventListener('change', async (e) => {
     }
 });
 
+// ---------- Create Topic ----------
 document.getElementById('btn-generate').addEventListener('click', async () => {
     const title = document.getElementById('input-title').value.trim();
     const sourceText = document.getElementById('input-source').value.trim();
@@ -168,6 +236,7 @@ document.getElementById('btn-generate').addEventListener('click', async () => {
     }
 });
 
+// ---------- Library ----------
 async function loadLibrary() {
     const listEl = document.getElementById('topic-list');
     listEl.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -198,6 +267,7 @@ async function loadLibrary() {
     }
 }
 
+// ---------- Topic Detail ----------
 async function openTopicDetail(topicId) {
     showView('topic-detail');
     currentTopicId = topicId;
@@ -236,6 +306,7 @@ async function openTopicDetail(topicId) {
     }
 }
 
+// ---------- Shared: Render a quiz question card ----------
 function renderQuestionCard(q) {
     const card = document.createElement('div');
     card.className = 'question-card';
@@ -305,6 +376,7 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// ---------- Chat Tutor ----------
 document.getElementById('btn-chat-send').addEventListener('click', sendChatMessage);
 document.getElementById('chat-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') sendChatMessage();
@@ -359,4 +431,5 @@ async function sendChatMessage() {
     }
 }
 
+// ---------- Init ----------
 loadDashboard();

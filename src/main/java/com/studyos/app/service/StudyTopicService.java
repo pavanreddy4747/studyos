@@ -4,6 +4,7 @@ import com.studyos.app.dto.GeneratedContent;
 import com.studyos.app.model.Flashcard;
 import com.studyos.app.model.QuizQuestion;
 import com.studyos.app.model.StudyTopic;
+import com.studyos.app.model.User;
 import com.studyos.app.repository.FlashcardRepository;
 import com.studyos.app.repository.QuizQuestionRepository;
 import com.studyos.app.repository.StudyTopicRepository;
@@ -29,8 +30,9 @@ public class StudyTopicService {
     @Autowired
     private GeminiService geminiService;
 
-    public StudyTopic createTopicFromMaterial(String title, String sourceText, int questionCount) throws Exception {
+    public StudyTopic createTopicFromMaterial(User owner, String title, String sourceText, int questionCount) throws Exception {
         StudyTopic topic = new StudyTopic(title, sourceText);
+        topic.setOwner(owner);
         topic = topicRepository.save(topic);
 
         GeneratedContent generated = geminiService.generateStudyMaterial(sourceText, questionCount);
@@ -59,28 +61,25 @@ public class StudyTopicService {
         return topicRepository.save(topic);
     }
 
-    public List<StudyTopic> getAllTopics() {
-        return topicRepository.findAll();
+    public List<StudyTopic> getTopicsForOwner(Long ownerId) {
+        return topicRepository.findByOwnerId(ownerId);
     }
 
-    public Optional<StudyTopic> getTopicById(Long id) {
-        return topicRepository.findById(id);
+    public Optional<StudyTopic> getTopicByIdForOwner(Long id, Long ownerId) {
+        return topicRepository.findById(id)
+                .filter(t -> t.getOwner() != null && t.getOwner().getId().equals(ownerId));
     }
 
-    public void deleteTopic(Long id) {
-        topicRepository.deleteById(id);
+    public void deleteTopicForOwner(Long id, Long ownerId) {
+        getTopicByIdForOwner(id, ownerId).ifPresent(t -> topicRepository.deleteById(id));
     }
 
-    public List<QuizQuestion> getQuestionsDueToday() {
-        return questionRepository.findDueForReview(LocalDate.now());
+    public List<QuizQuestion> getQuestionsDueTodayForOwner(Long ownerId) {
+        return questionRepository.findDueForReviewByOwner(LocalDate.now(), ownerId);
     }
 
-    public List<QuizQuestion> getAllUnmasteredQuestions() {
-        return questionRepository.findAllUnmastered();
-    }
-
-    public java.util.Map<String, Object> getAnalytics() {
-        List<QuizQuestion> all = questionRepository.findAll();
+    public java.util.Map<String, Object> getAnalyticsForOwner(Long ownerId) {
+        List<QuizQuestion> all = questionRepository.findAllByOwner(ownerId);
 
         long totalAnswered = all.stream().mapToLong(QuizQuestion::getTimesAnswered).sum();
         long totalCorrect = all.stream().mapToLong(QuizQuestion::getTimesCorrect).sum();

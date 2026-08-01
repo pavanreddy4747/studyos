@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>StudyOS — Your AI Study Operating System</title>
 <link rel="stylesheet" href="/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 </head>
 <body>
 
@@ -15,10 +16,16 @@
         <a href="#" data-view="create" class="nav-link">New Topic</a>
         <a href="#" data-view="library" class="nav-link">Library</a>
     </div>
+    <div class="nav-right">
+        <span id="streak-badge" class="streak-badge" style="display:none;">🔥 <span id="streak-count">0</span></span>
+        <span id="user-name" class="user-name"></span>
+        <a href="#" id="btn-logout" class="nav-link">Log Out</a>
+    </div>
 </nav>
 
 <div class="container">
 
+    <!-- DASHBOARD VIEW -->
     <section id="view-dashboard" class="view active">
         <h1>Today's Study Plan</h1>
         <p class="subtitle">Your personalized review queue, powered by spaced repetition</p>
@@ -42,7 +49,9 @@
                     <div class="analytics-value" id="analytics-answered">0</div>
                 </div>
             </div>
-            <div class="difficulty-breakdown" id="difficulty-breakdown"></div>
+            <div class="chart-wrap">
+                <canvas id="difficulty-chart"></canvas>
+            </div>
         </div>
 
         <div class="panel">
@@ -51,6 +60,7 @@
         </div>
     </section>
 
+    <!-- CREATE VIEW -->
     <section id="view-create" class="view">
         <h1>Add Study Material</h1>
         <p class="subtitle">Paste your notes or upload a PDF — AI will generate a quiz, flashcards, and a summary</p>
@@ -87,12 +97,14 @@
         </div>
     </section>
 
+    <!-- LIBRARY VIEW -->
     <section id="view-library" class="view">
         <h1>Your Topics</h1>
         <p class="subtitle">All generated study kits</p>
         <div id="topic-list" class="topic-grid"></div>
     </section>
 
+    <!-- TOPIC DETAIL VIEW -->
     <section id="view-topic-detail" class="view">
         <a href="#" id="back-to-library" class="back-link">&larr; Back to Library</a>
         <h1 id="detail-title"></h1>

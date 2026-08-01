@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyOS — Your AI Study Operating System</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/landing.css">
+</head>
+<body class="landing-body">
+
+<nav class="landing-nav">
+    <div class="brand">🧠 StudyOS</div>
+    <div class="landing-nav-links">
+        <a href="#" id="nav-login-link">Log In</a>
+        <a href="#" id="nav-signup-link" class="btn small">Get Started</a>
+    </div>
+</nav>
+
+<section class="hero">
+    <div class="hero-content">
+        <h1>Turn any notes into a personalized study plan — instantly.</h1>
+        <p class="hero-subtitle">
+            Paste your notes or upload a PDF. StudyOS generates a quiz, flashcards, and a summary
+            with AI — then tracks exactly what you're weak at and tells you what to review today,
+            using the same spaced-repetition science behind Anki.
+        </p>
+        <div class="hero-cta">
+            <button class="btn" id="hero-get-started">Get Started Free</button>
+        </div>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">📄</div>
+        <h3>Any Format, Instantly</h3>
+        <p>Paste notes or upload a PDF — even long documents get processed automatically.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">🧠</div>
+        <h3>AI-Generated Study Kits</h3>
+        <p>Quizzes with adjustable difficulty, flashcards, and concise summaries — all in seconds.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Spaced Repetition</h3>
+        <p>Wrong answers get rescheduled sooner. Right answers push reviews further out. Real memory science.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">💬</div>
+        <h3>AI Tutor, On Demand</h3>
+        <p>Stuck on a concept? Ask the built-in tutor — grounded in your own notes, not generic answers.</p>
+    </div>
+</section>
+
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="auth-modal-overlay">
+    <div class="auth-modal">
+        <button class="auth-modal-close" id="auth-modal-close">&times;</button>
+
+        <div id="auth-tab-login" class="auth-tab active">
+            <h2>Log In</h2>
+            <div class="form-row">
+                <label>Email</label>
+                <input type="email" id="login-email" placeholder="you@example.com">
+            </div>
+            <div class="form-row">
+                <label>Password</label>
+                <input type="password" id="login-password" placeholder="••••••••">
+            </div>
+            <div id="login-error" class="auth-error"></div>
+            <button class="btn" id="btn-login" style="width:100%;">Log In</button>
+            <p class="auth-switch">Don't have an account? <a href="#" id="switch-to-signup">Sign up</a></p>
+        </div>
+
+        <div id="auth-tab-signup" class="auth-tab">
+            <h2>Create Your Account</h2>
+            <div class="form-row">
+                <label>Name</label>
+                <input type="text" id="signup-name" placeholder="Your name">
+            </div>
+            <div class="form-row">
+                <label>Email</label>
+                <input type="email" id="signup-email" placeholder="you@example.com">
+            </div>
+            <div class="form-row">
+                <label>Password</label>
+                <input type="password" id="signup-password" placeholder="At least 6 characters">
+            </div>
+            <div id="signup-error" class="auth-error"></div>
+            <button class="btn" id="btn-signup" style="width:100%;">Create Account</button>
+            <p class="auth-switch">Already have an account? <a href="#" id="switch-to-login">Log in</a></p>
+        </div>
+    </div>
+</div>
+
+<script src="/js/landing.js"></script>
+</body>
+</html>
